@@ -1,0 +1,13 @@
+*plpgsql*
+
+Une fonction s'execute toujours dans une transaction et n'a donc pas besoin de rollback/commits, c'est deja le cas pqr defaut.
+https://www.postgresql.org/message-id/CAADeyWhtXG0uznEhyE68CPjGS5gQhnDmJ8f05ULCxkPmDfwnGg%40mail.gmail.com
+
+
+*todo*
+
+- [ ] ameliorer fonction commande pour boissons pizza desserts hors menu
+- [ ] table facturation / moyen de paiement
+- [ ] requete retour du livreur 
+- [?] delete on cascade
+- [?] emploi du temps livreurs et/ou cusinier

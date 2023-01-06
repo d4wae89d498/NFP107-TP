@@ -1,4 +1,4 @@
-SELECT * from public.passer_commande(
+SELECT * from public.commander(
 	nom_client => 'Doe john', 
 	liste_menus => ARRAY['Hiver'],
 	desserts_menus => ARRAY['Tiramisu'], 
@@ -6,9 +6,8 @@ SELECT * from public.passer_commande(
 	desserts => null, 
 	boissons => null,
 	à_emporter => false,
-	téléphone_client => null, 
+	téléphone_client => null,
 	numéro_rue => null, 
 	rue => null, 
 	quartier => null
 )
-

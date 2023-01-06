@@ -1,25 +1,26 @@
--- FUNCTION: public.passer_commande(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying, character varying, integer, character varying, character varying)
+-- FUNCTION: public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying, boolean, integer, character varying, character varying)
 
---DROP FUNCTION public.passer_commande(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying, character varying, integer, character varying, character varying);
+--DROP FUNCTION public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying, boolean, integer, character varying, character varying);
 
-CREATE OR REPLACE FUNCTION public.passer_commande(
+CREATE FUNCTION public.commander(
 	nom_client character varying,
 	liste_menus character varying[],
 	desserts_menus character varying[],
-	pizzas character varying[],
-	desserts character varying[],
-	boissons character varying[],
-	téléphone_client character varying,
+	liste_pizzas character varying[],
+	liste_desserts character varying[],
+	liste_boissons character varying[],
 	à_emporter boolean,
-	numéro_rue integer,
+	téléphone_client character varying,
+	numéro_rue character varying,
 	rue character varying,
 	quartier character varying,
 	OUT id_commande integer,
 	OUT nom_livreur character varying)
     RETURNS record
     LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
 AS $BODY$
-
 DECLARE id_client INTEGER;
 DECLARE id_du_menu INTEGER;
 DECLARE id_du_quartier INTEGER;
@@ -38,7 +39,7 @@ BEGIN
   	end if;
   	id_client := (select id from clients where nom = nom_client);
 	-- Verifier la coherence de la commande
-	if liste_menus is null and pizzas is null and desserts is null and boissons is null then
+	if liste_menus is null and liste_pizzas is null and liste_desserts is null and liste_boissons is null then
 		raise exception 'Il n''y a rien a commander!';
 	end if;
   	if 
@@ -76,6 +77,21 @@ BEGIN
 			where id = id_commande;
 		end if;	
 	end loop;
+
+	for i in 1..cardinality(liste_pizzas) loop
+		if not exists (select * from pizzas where nom = liste_pizzas[i]) then 
+			raise exception 'Il y a une pizza dans lise_pizza qui n''existe pas';
+		end if;
+		insert into pizzas_par_commande (id_commande, id_pizza) values (id_commande, (select id from pizzas where nom = liste_pizzas[i]));
+	end loop;
+
+	for i in 1..cardinality(liste_boissons) loop
+		if not exists (select * from pizzas where nom = liste_boissons[i]) then 
+			raise exception 'Il y a une boisson dans liste_boissons qui n''existe pas';
+		end if;
+		insert into boissons_par_commande (id_commande, id_pizza) values (id_commande, (select id from boissons where nom = liste_boissons[i]));
+	end loop;
+
 	-- Gerer la partie livraison
   	if à_emporter then
 		if téléphone_client is null or adresse_livraison is null or numéro_rue is null or quartier is null then
@@ -86,10 +102,8 @@ BEGIN
     	if nom_livreur is null then
       		raise exception 'Aucun livreur disponible dans le quartier demandé';
     	end if;
-    	insert into livraisons (id_commande, nom_livreur, numero_rue, rue, quartier)
-    	values (numero_commande, nom_livreur, numero_rue, rue, id_quartier);
+    	insert into livraisons (id_commande, nom_livreur, numéro_rue, rue, quartier)
+    	values (id_commande, nom_livreur, numéro_rue, rue, id_du_quartier);
    end if;
  END;
 $BODY$;
-
-

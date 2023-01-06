@@ -1,0 +1,5 @@
+- [ ] ameliorer fonction commande pour boissons pizza desserts hors menu
+- [ ] table facturation / moyen de paiement
+- [ ] requete retour du livreur 
+- [?] delete on cascade
+- [?] emploi du temps livreurs et/ou cusinier

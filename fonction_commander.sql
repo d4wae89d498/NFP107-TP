@@ -1,8 +1,8 @@
--- FUNCTION: public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying, boolean, integer, character varying, character varying)
+-- FUNCTION: public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], boolean, character varying, character varying, character varying, character varying)
 
---DROP FUNCTION public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying, boolean, integer, character varying, character varying);
+DROP FUNCTION public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], boolean, character varying, character varying, character varying, character varying);
 
-CREATE FUNCTION public.commander(
+CREATE OR REPLACE FUNCTION public.commander(
 	nom_client character varying,
 	liste_menus character varying[],
 	liste_desserts_menus character varying[],
@@ -11,13 +11,13 @@ CREATE FUNCTION public.commander(
 	liste_tailles_pizzas_menus character varying[],
 	liste_desserts character varying[],
 	liste_boissons character varying[],
-	à_emporter boolean,
-	téléphone_client character varying,
-	numéro_rue character varying,
+	"à_emporter" boolean,
+	"téléphone_client" character varying,
+	"numéro_rue" character varying,
 	rue character varying,
 	quartier character varying,
 	OUT id_commande integer,
-	OUT nom_livreur character varying)
+	OUT id_livreur integer)
     RETURNS record
     LANGUAGE 'plpgsql'
     COST 100
@@ -29,7 +29,7 @@ DECLARE id_du_quartier INTEGER;
 
 BEGIN
  	id_commande := null;
-	nom_livreur := null;
+	id_livreur := null;
 	-- Enregistrer un client
 	if (nom_client is null) then
 		raise exception 'Le nom du client est obligatoire';
@@ -45,13 +45,13 @@ BEGIN
 		raise exception 'Il n''y a rien a commander!';
 	end if;
   	if 
-  		liste_menus is not null and liste_desserts_menus is not null and cardinality(liste_menus) != cardinality(desserts_menus) 
+  		liste_menus is not null and liste_desserts_menus is not null and cardinality(liste_menus) != cardinality(liste_desserts_menus) 
   		or
 		liste_menus is not null and liste_desserts_menus is null
 		or 
 		liste_menus is null and liste_desserts_menus is not null
 		or
-		liste_menus is not null and liste_pizzas_menus is not null and cardinality(liste_menus) != cardinality(desserts_menus) 
+		liste_menus is not null and liste_pizzas_menus is not null and cardinality(liste_menus) != cardinality(liste_pizzas_menus) 
   		or
 		liste_menus is not null and liste_pizzas_menus is null
 		or 
@@ -75,10 +75,10 @@ BEGIN
 			end if;
 			if not exists (select * from choix_pizzas_menu
 							where id_menu = id_du_menu and  id_pizza = (
-								select id from desserts where nom = liste_pizzas_menus[i])) then
+								select id from pizzas where nom = liste_pizzas_menus[i])) then
 	  				raise exception 'La pizza n''existe pas dans le menu!';
 			end if;
-			update menus_par_commande set id_dessert = (
+			update menus_par_commande set id_pizza = (
 				select id from pizzas where nom = liste_pizzas_menus[i]
 			) where id_menu = id_du_menu;
 			if liste_desserts_menus[i] is not null then
@@ -117,7 +117,7 @@ BEGIN
 			end if;
 		end loop;
 	end if;
-    if liste_desserts then
+    if liste_desserts is not null then
 		for i in 1..cardinality(liste_desserts) loop
 			if not exists (select * from desserts where nom = liste_desserts[i]) then 
 				raise exception 'Il y a un dessert dans liste_desserts qui n''existe pas';
@@ -128,7 +128,7 @@ BEGIN
             insert into desserts_par_commande (id_commande, id_dessert) values (id_commande, (select id from desserts where nom = liste_desserts[i]));
 		end loop;
 	end if;
-	if liste_boissons then
+	if liste_boissons is not null then
 		for i in 1..cardinality(liste_boissons) loop
 			if not exists (select * from boissons where nom = liste_boissons[i]) then 
 				raise exception 'Il y a une boisson dans liste_boissons qui n''existe pas';
@@ -141,16 +141,19 @@ BEGIN
 	end if;
 	-- Gerer la partie livraison
   	if à_emporter then
-		if téléphone_client is null or adresse_livraison is null or numéro_rue is null or quartier is null then
+		if téléphone_client is null or numéro_rue is null or rue is null is null or quartier is null then
 			raise exception 'Les données de livraison sont incomplètes';
 		end if;
     	id_du_quartier := (select id from quartiers where nom = quartier);
-    	nom_livreur := (select nom from livreurs where livreurs.id_quartier = id_du_quartier limit 1);
-    	if nom_livreur is null then
+    	id_livreur := (select id from livreurs where livreurs.quartier = id_du_quartier limit 1);
+    	if id_livreur is null then
       		raise exception 'Aucun livreur disponible dans le quartier demandé';
     	end if;
-    	insert into livraisons (id_commande, nom_livreur, numéro_rue, rue, quartier)
-    	values (id_commande, nom_livreur, numéro_rue, rue, id_du_quartier);
+    	insert into livraisons (id_commande, id_livreur, numéro_rue, rue, id_quartier, téléphone_client, terminée)
+    	values (id_commande, id_livreur, numéro_rue, rue, id_du_quartier, téléphone_client, false);
    end if;
  END;
 $BODY$;
+
+ALTER FUNCTION public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], boolean, character varying, character varying, character varying, character varying)
+    OWNER TO postgres;

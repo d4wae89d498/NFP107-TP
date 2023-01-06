@@ -1,3 +1,5 @@
+-- Créer les tables
+
 CREATE TABLE pizzas (
   id SERIAL PRIMARY KEY,
   nom VARCHAR(255) NOT NULL UNIQUE,
@@ -49,6 +51,7 @@ CREATE TABLE menus_par_commande (
   id SERIAL PRIMARY KEY,
   id_commande INTEGER NOT NULL REFERENCES commandes (id),
   id_menu INTEGER NOT NULL REFERENCES menus (id),
+  id_pizza INTEGER NULL REFERENCES pizzas (id),
   id_dessert INTEGER NULL REFERENCES desserts (id)
 );
 
@@ -94,7 +97,7 @@ CREATE TABLE livraisons (
   id SERIAL PRIMARY KEY,
   id_commande INTEGER NOT NULL REFERENCES commandes (id),
   id_livreur INTEGER NOT NULL REFERENCES livreurs (id),
-  numéro_rue INTEGER NOT NULL,
+  numéro_rue VARCHAR(255) NOT NULL,
   rue VARCHAR(255) NOT NULL,
   id_quartier INTEGER NOT NULL REFERENCES quartiers (id),
   téléphone_client VARCHAR (255) NOT NULL,

@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION public.commander(
 	liste_desserts_menus character varying[],
 	liste_pizzas_menus character varying[],
 	liste_pizzas character varying[],
-	liste_tailles_pizzas_menus character varying[],
+	liste_tailles_pizzas character varying[],
 	liste_desserts character varying[],
 	liste_boissons character varying[],
 	"à_emporter" boolean,
@@ -100,15 +100,15 @@ BEGIN
 				raise exception 'Il y a une pizza dans lise_pizza qui n''existe pas';
 			end if;
 			insert into pizzas_par_commande (id_commande, id_pizza) values (id_commande, (select id from pizzas where nom = liste_pizzas[i]));				
-			if (liste_tailles_pizzas_menus[i] = 'petite') then
+			if (liste_tailles_pizzas[i] = 'petite') then
 				update commandes 
 					set montant_total = montant_total + (SELECT prix_petite FROM pizzas WHERE nom = liste_pizzas[i]) 
 						where id = id_commande;
-			elsif (liste_tailles_pizzas_menus[i] = 'moyenne') then
+			elsif (liste_tailles_pizzas[i] = 'moyenne') then
 				update commandes 
 					set montant_total = montant_total + (SELECT prix_moyenne FROM pizzas WHERE nom = liste_pizzas[i]) 
 						where id = id_commande;
-			elsif (liste_tailles_pizzas_menus[i] = 'grande') then
+			elsif (liste_tailles_pizzas[i] = 'grande') then
 				update commandes
 					set montant_total = montant_total + (SELECT prix_grande FROM pizzas WHERE nom = liste_pizzas[i]) 
 						where id = id_commande;

@@ -6,7 +6,7 @@ SELECT * from public.commander(
 	liste_pizzas_menus => array ['4 fromages', 'Merguez'],
 	-- LES EXTRAS
 	liste_pizzas => array['Raclette'],
-	liste_tailles_pizzas_menus => array['petite'],
+	liste_tailles_pizzas => array['petite'],
 	liste_desserts => array['Tiramisu'],
 	liste_boissons => array['1664', '1664', '1664', 'Sprite'],
 	-- DETAILS COMMANDE

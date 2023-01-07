@@ -1,7 +1,3 @@
--- FUNCTION: public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], boolean, character varying, character varying, character varying, character varying)
-
-DROP FUNCTION public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], boolean, character varying, character varying, character varying, character varying);
-
 CREATE OR REPLACE FUNCTION public.commander(
 	nom_client character varying,
 	liste_menus character varying[],
@@ -40,7 +36,7 @@ BEGIN
     	update clients set téléphone = téléphone_client where nom = nom_client;
   	end if;
   	id_client := (select id from clients where nom = nom_client);
-	-- Verifier la coherence de la commande
+	-- Enregistrer la commande et verifier la cohérance
 	if liste_menus is null and liste_pizzas is null and liste_desserts is null and liste_boissons is null then
 		raise exception 'Il n''y a rien a commander!';
 	end if;
@@ -59,7 +55,6 @@ BEGIN
   	then
 		raise exception 'Le nombre de menu et de desserts/pizzas par menu doit etre identique!';
    	end if;
-	-- Enregistrer la commande et verifier la cohérance
 	insert into commandes (id_client, montant_total, terminée, payée) 
 		values (id_client, 0, false, false) returning id into id_commande;
 	if liste_menus is not null then
@@ -154,6 +149,3 @@ BEGIN
    end if;
  END;
 $BODY$;
-
-ALTER FUNCTION public.commander(character varying, character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], character varying[], boolean, character varying, character varying, character varying, character varying)
-    OWNER TO postgres;

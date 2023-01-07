@@ -86,5 +86,3 @@ VALUES
 
 
 COMMIT;
-
-select * from quartiers

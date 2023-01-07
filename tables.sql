@@ -43,6 +43,7 @@ CREATE TABLE commandes (
   id SERIAL PRIMARY KEY,
   id_client INTEGER NOT NULL REFERENCES clients (id),
   montant_total DECIMAL(10,2) NOT NULL,
+  date_heure_commande TIMESTAMP NOT NULL default(NOW()),
   terminée BOOLEAN NOT NULL DEFAULT(false),
   payée BOOLEAN NOT NULL DEFAULT(false)
 );
@@ -58,7 +59,8 @@ CREATE TABLE menus_par_commande (
 CREATE TABLE pizzas_par_commande (
   id SERIAL PRIMARY KEY,
   id_commande INTEGER NOT NULL REFERENCES commandes (id),
-  id_pizza INTEGER NOT NULL REFERENCES pizzas (id)
+  id_pizza INTEGER NOT NULL REFERENCES pizzas (id),
+  taille VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE desserts_par_commande (
@@ -101,5 +103,5 @@ CREATE TABLE livraisons (
   rue VARCHAR(255) NOT NULL,
   id_quartier INTEGER NOT NULL REFERENCES quartiers (id),
   téléphone_client VARCHAR (255) NOT NULL,
-  terminée BOOLEAN NOT NULL DEFAULT(false)
+  date_heure_livraison TIMESTAMP NULL
 );

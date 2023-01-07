@@ -1,3 +1,4 @@
+-- passer une commande
 SELECT * from public.commander(
 	nom_client => 'John Doe',
 	-- LES MENUS ET LES OPTIONS DES MENUS 

@@ -85,7 +85,10 @@ BEGIN
 				update menus_par_commande set id_dessert = (
 					select id from desserts where nom = liste_desserts_menus[i]
 				) where id_menu = id_du_menu;
-			end if;	
+			end if;
+			update commandes 
+					set montant_total = montant_total + (SELECT prix FROM menus WHERE nom = liste_menus[i]) 
+						where id = id_commande;	
 		end loop;
 	end if;
     -- Extras hors menu
@@ -94,7 +97,7 @@ BEGIN
 			if not exists (select * from pizzas where nom = liste_pizzas[i]) then 
 				raise exception 'Il y a une pizza dans lise_pizza qui n''existe pas';
 			end if;
-			insert into pizzas_par_commande (id_commande, id_pizza) values (id_commande, (select id from pizzas where nom = liste_pizzas[i]));				
+			insert into pizzas_par_commande (id_commande, id_pizza, taille) values (id_commande, (select id from pizzas where nom = liste_pizzas[i]), liste_tailles_pizzas[i]);				
 			if (liste_tailles_pizzas[i] = 'petite') then
 				update commandes 
 					set montant_total = montant_total + (SELECT prix_petite FROM pizzas WHERE nom = liste_pizzas[i]) 
@@ -144,8 +147,8 @@ BEGIN
     	if id_livreur is null then
       		raise exception 'Aucun livreur disponible dans le quartier demandé';
     	end if;
-    	insert into livraisons (id_commande, id_livreur, numéro_rue, rue, id_quartier, téléphone_client, terminée)
-    	values (id_commande, id_livreur, numéro_rue, rue, id_du_quartier, téléphone_client, false);
+    	insert into livraisons (id_commande, id_livreur, numéro_rue, rue, id_quartier, téléphone_client)
+    	values (id_commande, id_livreur, numéro_rue, rue, id_du_quartier, téléphone_client);
    end if;
  END;
 $BODY$;
